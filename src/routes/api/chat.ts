@@ -65,7 +65,7 @@ export const Route = createFileRoute("/api/chat")({
           });
           const patch: Record<string, string> = { updated_at: new Date().toISOString() };
           if (thread["title"] === "New conversation") {
-            patch.title = lastUserText.slice(0, 60);
+            patch["title"] = lastUserText.slice(0, 60);
           }
           await supabase.from("chat_threads").update(patch).eq("id", threadId);
         }
