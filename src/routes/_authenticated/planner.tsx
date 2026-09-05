@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/planner")({
       },
     ],
   }),
-  component: Planner;
+  component: Planner,
 });
 
 const PRIORITY_TONE: Record<string, string> = {
