@@ -17,10 +17,7 @@ async function runGateway(system: string, prompt: string) {
     model: gateway(CHAT_MODEL),
     system,
     prompt,
-    providerOptions: GATEWAY_PROVIDER_OPTIONS as unknown as Record<
-      string,
-      Record<string, unknown>
-    >,
+    providerOptions: GATEWAY_PROVIDER_OPTIONS as never,
   });
   return await result.text;
 }

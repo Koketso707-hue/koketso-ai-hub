@@ -64,8 +64,8 @@ export const Route = createFileRoute("/api/chat")({
             client_id: lastUser?.id ?? null,
           });
           const patch: Record<string, string> = { updated_at: new Date().toISOString() };
-          if (thread.title === "New conversation") {
-            patch.title = lastUserText.slice(0, 60);
+          if (thread["title"] === "New conversation") {
+            patch["title"] = lastUserText.slice(0, 60);
           }
           await supabase.from("chat_threads").update(patch).eq("id", threadId);
         }
@@ -85,10 +85,7 @@ export const Route = createFileRoute("/api/chat")({
           model: gateway(CHAT_MODEL),
           system: SYSTEM_PROMPT,
           messages: await convertToModelMessages(uiMessages),
-          providerOptions: GATEWAY_PROVIDER_OPTIONS as unknown as Record<
-            string,
-            Record<string, unknown>
-          >,
+          providerOptions: GATEWAY_PROVIDER_OPTIONS as never,
           onError: ({ error }) => console.error("chat stream error", error),
         });
 

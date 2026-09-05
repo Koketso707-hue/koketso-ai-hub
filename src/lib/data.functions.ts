@@ -73,7 +73,7 @@ export const updateProfile = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("profiles")
-      .upsert({ id: context.userId, ...data }, { onConflict: "id" });
+      .upsert({ id: context.userId, ...data } as never, { onConflict: "id" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -111,7 +111,7 @@ export const createTask = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("tasks")
-      .insert({ ...data, user_id: context.userId })
+      .insert({ ...data, user_id: context.userId } as never)
       .select("id")
       .single();
     if (error) throw new Error(error.message);
@@ -124,7 +124,7 @@ export const createTasksBulk = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     if (data.tasks.length === 0) return { inserted: 0 };
     const rows = data.tasks.map((t, i) => ({ ...t, position: i, user_id: context.userId }));
-    const { error } = await context.supabase.from("tasks").insert(rows);
+    const { error } = await context.supabase.from("tasks").insert(rows as never);
     if (error) throw new Error(error.message);
     return { inserted: rows.length };
   });
@@ -142,7 +142,7 @@ export const updateTask = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("tasks")
-      .update(data.patch)
+      .update(data.patch as never)
       .eq("id", data.id)
       .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
@@ -195,7 +195,7 @@ export const updateResearch = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("research_items")
-      .update(data.patch)
+      .update(data.patch as never)
       .eq("id", data.id)
       .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
