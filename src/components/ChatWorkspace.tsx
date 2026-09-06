@@ -217,6 +217,12 @@ function ChatPanel({
   const [input, setInput] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
 
+  const voice = useSpeechRecognition({
+    onFinalText: (text) =>
+      setInput((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text)),
+    onError: (message) => toast.error(message),
+  });
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
