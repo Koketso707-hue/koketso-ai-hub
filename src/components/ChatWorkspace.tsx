@@ -2,12 +2,13 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Mic, MicOff, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 
 import { AppShell, Disclaimer } from "@/components/AppShell";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createThread,
@@ -216,6 +217,12 @@ function ChatPanel({
   const [input, setInput] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
 
+  const voice = useSpeechRecognition({
+    onFinalText: (text) =>
+      setInput((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text)),
+    onError: (message) => toast.error(message),
+  });
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -285,24 +292,47 @@ function ChatPanel({
           e.preventDefault();
           const value = input.trim();
           if (!value || busy) return;
+          if (voice.listening) voice.stop();
           setInput("");
           void sendMessage({ text: value });
         }}
         className="mt-4 flex items-end gap-2"
       >
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              e.currentTarget.form?.requestSubmit();
-            }
-          }}
-          rows={2}
-          placeholder="Message Koketso…"
-          className="min-w-0 flex-1 resize-y rounded-2xl border border-border bg-secondary px-4 py-3 text-sm font-semibold outline-none focus:bg-card"
-        />
+        <div className="min-w-0 flex-1">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
+            rows={2}
+            placeholder={voice.listening ? "Listening… just speak" : "Message Koketso…"}
+            className="w-full resize-y rounded-2xl border border-border bg-secondary px-4 py-3 text-sm font-semibold outline-none focus:bg-card"
+          />
+          {voice.listening && (
+            <p className="mt-1 px-1 text-[12px] font-bold text-muted-foreground">
+              <span className="mr-1 inline-block size-2 animate-pulse rounded-full bg-brand align-middle" />
+              {voice.interim || "Listening…"}
+            </p>
+          )}
+        </div>
+        {voice.supported && (
+          <button
+            type="button"
+            onClick={voice.toggle}
+            aria-pressed={voice.listening}
+            aria-label={voice.listening ? "Stop voice input" : "Start voice input"}
+            title={voice.listening ? "Stop voice input" : "Speak your message"}
+            className={`shrink-0 rounded-full px-4 py-3 ring-1 ring-border ${
+              voice.listening ? "bg-brand text-card" : "bg-secondary text-foreground"
+            }`}
+          >
+            {voice.listening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+          </button>
+        )}
         <button
           type="submit"
           disabled={busy || input.trim().length === 0}
